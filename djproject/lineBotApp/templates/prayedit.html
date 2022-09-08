@@ -1,0 +1,74 @@
+
+{% extends "base2.html" %}
+{% load static %}
+
+{% block content %}
+<script>
+     
+    $(document).ready(function() {
+        $(window).keydown(function(event){
+            if(event.keyCode == 13) {
+                event.preventDefault();
+                return false;
+            }
+        });
+        $("#btnClose").click(function(e){
+            window.close();
+
+        });
+        
+        $("#pray-form").submit(function (e) {
+            e.preventDefault();
+            
+            if ( $("#prayforme").val()!=""  ){
+                    var serializedData = $(this).serialize();
+                    $.ajax({
+                        type: 'POST',
+                        url: "{% url 'PostPray' %}",
+                        data: serializedData,
+                        success: function (response) {
+                            
+                            var instance = JSON.stringify(response);
+                            $("#resultMessage").html( response.result.error );
+                            //console.log( response.result.error);
+                        },
+                        error: function (response) {
+                            $("#resultMessage").html("主機回應錯誤");
+                        }
+                    });
+            }
+            else{
+                $("#resultMessage").html( "請輸入代禱內容");
+            }
+        });
+    });
+   
+</script>
+<form id="pray-form"> 
+    {% csrf_token %} 
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class=" alert alert-info" role="alert" style="font-size: 30pt;">                
+              {{ contactname }}請輸入代禱內容<input type="hidden" value="{{ sid }}" name="sid" id ="sid"/>
+            </div>
+        </div>
+        <div class="col-12 ">
+            <div class="input-group "  >                
+                <textarea type="text" name="prayforme" id="prayforme" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" 
+                style="font-size: 30pt;"  rows="18" 
+                >{{ description }}</textarea>
+            </div>
+        </div> 
+        <div class="col-2"></div>
+        <div class="col-12">
+            <div class="alert alert-light"><span style="font-size: 28pt;" id="resultMessage" >{{ addResult }}</span> </div>
+        </div>
+        <div class="col-12 d-grid gap-2">
+            <button type="submit" class="btn btn-primary" style="font-size: 32pt; background-color:#FF8000"  >送出</button>
+        </div>
+        
+    </div>    
+</div>
+</form>
+{% endblock %}

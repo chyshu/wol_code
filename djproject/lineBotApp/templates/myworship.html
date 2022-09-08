@@ -1,0 +1,295 @@
+{% extends "base2.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+<script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+<script>
+     var memberObject=null;
+     var worshipObject=null;
+     var worshipgroupObject=null;
+    $(document).ready(function() {
+        $(window).keydown(function(event){
+            if(event.keyCode == 13) {
+                event.preventDefault();
+                return false;
+            }
+        });
+        $("#btnClose").click(function(e){
+            window.close();
+
+        });         
+        function initializeLiff(myLiffId) {
+                liff
+                        .init({
+                            liffId: myLiffId
+                        })
+                        .then(() => {
+                            //var h = document.getElementById('contactname');
+                            //$("#resultMessage").html( "請輸入姓名");
+                            initializeApp();
+                        })
+                        .catch((err) => {
+                            $("#resultMessage").html('啟動失敗。');
+                        });
+        };
+
+        function initializeApp() {
+            liff
+            .getProfile()
+            .then((profile) => {
+                const name = profile.displayName;
+                              
+                var dataJSON={
+                    "UserID":profile.userId                
+                };
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'getProfile' %}",                    
+                    data:  JSON.stringify(dataJSON), 
+                    dataType: "json",
+                    contentType: 'application/json',
+                    headers:{
+                        "X-Csrftoken": '{{ csrf_token }}'
+                     },
+                    success: function (response) {
+                        
+                        memberObject = JSON.parse(response.result.member);      
+                        worshipObject= JSON.parse(response.result.worship);      
+                        worshipgroupObject= JSON.parse( response.result.worshipgroup);  
+                         $("#contactname").val( memberObject.contactname );
+                         $("#contactid").val(memberObject.contactid);
+                         $("#user_id").val(memberObject.user_id);
+                        //console.log( response.result.error);
+                        
+                        $("#worshipdate")
+                            .empty()
+                            .append('<option value="">選擇主日</option>')
+                            .val('') ;
+                        for(var i=0;i<worshipObject.length;i++ ){
+                            $("#worshipdate")
+                            .append('<option value="'+ worshipObject[i].worshipdate +'">'+ worshipObject[i].worshipdate +'</option>');
+                        }
+                        $(".grouplist")
+                        .empty()
+                        .append('<option value="">選擇小組</option>');
+
+                        for(var i=0;i<worshipgroupObject.length;i++ ){
+                            // $("#resultMessage").html( worshipgroupObject[i].listName );
+                            $(".grouplist")
+                            .append('<option value="'+ worshipgroupObject[i].listid +'">'+ worshipgroupObject[i].listName +'</option>');
+                        }
+                        if(worshipgroupObject.length==1){
+                            $(".grouplist").val( worshipgroupObject[0].listid).change();
+                        }
+
+                    },
+                    error: function (response) {
+                        $("#resultMessage").html("主機回應錯誤");
+                       // $("#resultMessage").html( response.result.error );
+                    }
+                });
+
+            })
+            .catch((err) => {
+            console.log("error", err);
+            });
+        }
+
+        $("#worshipdate").change(function(){
+
+            var tdate = $( this ).val() ;
+            
+            for(var i=0;i<worshipObject.length;i++ ){
+                if(tdate==worshipObject[i].worshipdate  )   { 
+                    //$("#session").val(worshipObject[i].session );
+                    $("#resultMessage").html( worshipObject[i].groupworship );
+                   
+                    $(".spiritual_times").val(worshipObject[i].worship_times ).change();
+                    $(".worshipsession" ).val(worshipObject[i].session ).change();
+                    //$(".grouplist").val( worshipObject[i].groupworship.listid  ).change();
+
+
+                    
+                    $(".worship-group")
+                        .empty()
+                        .append('<option value="">選擇聚會日期</option>');
+                    for(var j=0;j<worshipObject[i].week.length; j++ ){
+                        $(".worship-group")
+                        .append('<option value="'+ worshipObject[i].week[j] +'">'+ worshipObject[i].week[j] +'</option>');
+                    }
+
+                    $(".worship-group").val( worshipObject[i].groupworship.worshipdate).change();
+                    //alert(worshipObject[i].groupworship.worshipdate );
+                    $("#prayforme_tdate" ).val(worshipObject[i].prayforme.tdate ).change();
+                    $("#prayforme_id" ).val(worshipObject[i].prayforme.prayid ).change();
+                    // alert(worshipObject[i].prayforme.description );
+                    $("#prayforme" ).val(worshipObject[i].prayforme.description ).change();
+
+                    // $(".resultMessage").html( worshipObject[i].groupworship );
+
+                    break;
+                }
+            }
+            
+ 
+        });
+
+
+        $("#worship-form").submit(function (e) {
+            e.preventDefault();
+            $("#resultMessage").html( "" ).change();
+            if ( $("#contactname").val()!=""  ){
+                
+                    var serializedData = $(this).serialize();
+                    $.ajax({
+                        type: 'POST',
+                        url: "{% url 'worship' %}",
+                        data: serializedData,
+                        success: function (response) {
+                            
+                            var instance = JSON.stringify(response);                            
+                               
+                            worshipObject= JSON.parse(response.result.worship);      
+                            worshipgroupObject= JSON.parse( response.result.worshipgroup);  
+
+                            var tdate = $("#worshipdate").val();
+                            for(var i=0;i<worshipObject.length;i++ ){
+                                if(tdate==worshipObject[i].worshipdate  )   { 
+                                    
+                                    $(".spiritual_times").val(worshipObject[i].worship_times ).change();
+                                    $(".worshipsession" ).val(worshipObject[i].session ).change();
+                                    $(".worship-group").val( worshipObject[i].groupworship.worshipdate).change();
+                                    //alert(worshipObject[i].groupworship.worshipdate );
+                                    $("#prayforme_tdate" ).val(worshipObject[i].prayforme.tdate ).change();
+                                    $("#prayforme_id" ).val(worshipObject[i].prayforme.prayid ).change();
+                                    // alert(worshipObject[i].prayforme.description );
+                                    $("#prayforme" ).val(worshipObject[i].prayforme.description ).change();
+                                    break;
+                                }
+                            }
+                            $("#resultMessage").html( response.result.error );
+
+                        },
+                        error: function (response) {
+                            $("#resultMessage").html("主機回應錯誤");
+                        }
+                    });
+            }
+            else{
+                $("#resultMessage").html( "請輸入姓名");
+            }
+        });
+
+        //使用 LIFF_ID 初始化 LIFF 應用
+        initializeLiff('1657309833-P82YBEM5'); 
+
+   
+    });
+   
+</script>
+<form id="worship-form"> 
+    {% csrf_token %} 
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12  mb-4 ">
+            <div class=" alert alert-info" role="alert" style="font-size: 42pt;">                
+              個人回報
+            </div>
+        </div>
+        <div class="col-10  mb-4">
+            <div class="input-group ">
+                <input  type="hidden" name="contactid" id="contactid" value="" />
+                <input  type="hidden" name="user_id" id="user_id" value="" />
+                <input  type="hidden" name="prayforme_tdate" id="prayforme_tdate" value="" />
+                <input  type="hidden" name="prayforme_id" id="prayforme_id" value="" />
+                <span class="input-group-text"  id="inputGroup-sizing-default" ><span style="font-size: 40pt;">姓名</span></span>
+                <input type="text" name="contactname" id="contactname" 
+                      class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" style="font-size: 40pt;"   ></input>
+            </div>
+        </div> 
+        <div class="col-10  mb-4">
+            <div class="input-group ">
+                <span class="input-group-text"  id="inputGroup-sizing-default" ><span style="font-size: 40pt;">聚會小組</span></span>
+                <select class="form-select grouplist"  name="grouplist" id="grouplist"  style="font-size: 40pt;" size="8">                   
+                </select>                
+            </div>
+        </div>         
+        <div class="col-10  mb-4">
+            <div class="input-group ">
+                <span   class=" input-group-text"  ><span style="font-size: 40pt;">周次</span></span>
+                <select class="form-select form-select-lg " aria-label="選擇周次" style="font-size: 40pt;" size="4" id="worshipdate"  name="worshipdate">
+                    {% for elem in weeklist %}
+                        <option  value="{{ elem.worshipdate }}" >{{ elem.worshipdate  }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-2"></div>
+        <div class="col-10  mb-4">
+            <div class="input-group ">
+                <span   class=" input-group-text"  ><span style="font-size: 40pt;">主日崇拜</span></span>
+                <select class="form-select form-select-lg worshipsession" aria-label="選擇場次" style="font-size: 40pt;" name="worshipsession" id="worshipsession"  size="4">
+                    <option  value="" >未回報</option>
+                    <option  value="未參加" >未參加</option>
+                    <option  value="第一堂" >第一堂</option>
+                    <option  value="第二堂" >第二堂</option>
+                    <option  value="青年崇拜" >青年崇拜</option>
+                    <option  value="線上" >線上</option>
+                    
+                </select>
+            </div>
+        </div>
+        <div class="col-2"></div>
+        <div class="col-10  mb-4">
+            <div class="input-group ">
+                <span class="input-group-text form-select-lg " ><span style="font-size: 40pt;">本周靈修天數</span></span>
+                <select class="form-select spiritual_times"  name="spiritual_times" id="spiritual_times"  style="font-size: 40pt;" size="8" >
+                    <option>0</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4</option>
+                    <option>5</option>
+                    <option>6</option>
+                    <option>7</option>
+                  </select>                
+            </div>
+        </div> 
+        <div class="col-2"></div>  
+        <div class="col-10  mb-4">
+            <div class="input-group ">
+                <span   class=" input-group-text"  ><span style="font-size: 40pt;">本周小組聚會</span></span>
+                <select class="form-select form-select-lg worship-group" aria-label="" style="font-size: 40pt;" id="groupworship"  name="groupworship" size="4">
+                    <option  value="" >未回報</option>
+                    <option  value="未出席" >未出席</option>
+                    <option  value="出席" >出席</option>                   
+                    
+                </select>
+            </div>
+        </div>
+        <div class="col-2"></div>  
+        <div class="col-10  mb-4">
+            <span   class=" input-group-text"  ><span style="font-size: 40pt;">代禱事項</span></span>              
+        </div>
+        <div class="col-10  mb-4">
+            <div class="input-group "  >                
+                <textarea type="text" name="prayforme" id="prayforme" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" 
+                style="font-size: 30pt;"  rows="10" ></textarea>
+            </div>
+        </div>
+        <div class="col-2"></div>  
+
+        
+        <div class="col-12 mb-3 "><span  class="resultMessage" style="font-size: 38pt; " id="resultMessage" ></span> </div>
+        <div class="col-6 mb-3">
+            <button type="submit" class="btn btn-primary btn-lg" style="font-size: 48pt; "  >送出</button>
+        </div>
+        <div class="col-6">
+            <button type="button" class="btn btn-info btn-lg" style="font-size: 48pt; " id="btnClose"  >Close</button>
+        </div>
+    </div>    
+</div>
+</form>
+{% endblock %}

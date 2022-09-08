@@ -1,0 +1,237 @@
+{% extends "base2.html" %}
+ 
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+<script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+<script>
+
+     
+    $(document).ready(function() {
+        $(window).keydown(function(event){
+            if(event.keyCode == 13) {
+                event.preventDefault();
+                return false;
+            }
+        });
+        $("#btnClose").click(function(e){
+            window.close();
+
+        });         
+        function initializeLiff(myLiffId) {
+                liff
+                        .init({
+                            liffId: myLiffId
+                        })
+                        .then(() => {
+                            //var h = document.getElementById('contactname');
+                            //$("#resultMessage").html( "請輸入姓名");
+                            initializeApp();
+                        })
+                        .catch((err) => {
+                            $("#resultMessage").html( err.message );//'啟動失敗。');
+                            console.log(err);
+                        });
+                        
+        };
+
+        function initializeApp() {           
+            var dataJSON={
+                "contactid":"{{contactid}}", 
+                "listid":"{{listid}}"
+            };
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'getMemberProfile' %}",                    
+                data:  JSON.stringify(dataJSON), 
+                dataType: "json",
+                contentType: 'application/json',
+                headers:{
+                    "X-Csrftoken": '{{ csrf_token }}'
+                    },
+                success: function (response) {
+                    $("#resultMessage").html( response );
+                    listmemberObject = JSON.parse(response.result.listmember);
+                    weeklistObject = JSON.parse(response.result.weeklist);
+                    $("#worshipdate").change();
+                },
+                error: function (response) {
+                    $("#resultMessage").html("主機回應錯誤");
+                    // $("#resultMessage").html( response.result.error );
+                }
+            });      
+        }
+
+        $("#worshipdate").change(function(){
+
+            var tdate = $( this ).val() ;
+            
+            for(var i=0;i<listmemberObject.length;i++ ){
+                for(var j=0;j<listmemberObject[i].worshipdata.length ;j++ )
+                {
+                    if(listmemberObject[i].worshipdata[j].worship_date==tdate )
+                    {
+                        for(var k=0;k<listmemberObject[i].worshipdata[j].sessions.length ;k++ )
+                        { 
+
+                            //$("#session").val(worshipObject[i].session );
+                            // $("#resultMessage").html( listmemberObject[i].worshipdata[j].sessions[1].session+ " "+ listmemberObject[i].worshipdata[j].sessions[1].attended +" "+  listmemberObject[i].lastname  );
+
+                            var onj =$(".worshipdata[data-key$='"+listmemberObject[i].ContactId +"'][data-session$='"+ listmemberObject[i].worshipdata[j].sessions[k].session +"']");
+                            if(listmemberObject[i].worshipdata[j].sessions[k].attended=='Y'){
+                                onj.removeClass("btn-undo").addClass("btn-primary");    
+                                $(".worshipdata[data-key$='"+listmemberObject[i].ContactId +"'][data-session$='"+ listmemberObject[i].worshipdata[j].sessions[k].session +"']>span").html("出席"+listmemberObject[i].worshipdata[j].sessions[k].session );
+                            }
+                            else    {
+                                onj.removeClass("btn-primary").addClass("btn-undo");        
+                                $(".worshipdata[data-key$='"+listmemberObject[i].ContactId +"'][data-session$='"+ listmemberObject[i].worshipdata[j].sessions[k].session +"']>span").html(listmemberObject[i].worshipdata[j].sessions[k].session );
+                            }
+                            onj.change();                            
+                        }
+
+                        $(".worshipdata[data-key$='"+listmemberObject[i].ContactId +"']").each( function(e) {  $( this ).attr("data-date" ,tdate);  $( this ).change(); });
+    
+                    }
+                }
+            }            
+ 
+        });
+     
+        var clickObject=null;
+        $("button.worshipdata").click(function () {
+            clickObject=$(this);
+            var dataJSON={
+                "contactid":"{{contactid}}", 
+                "listid":"{{listid}}",
+                "datakey" : $(this).attr("data-key"),
+                "worshipdate":$( this ).attr("data-date"),
+                "session":$(this).attr("data-session"),
+                "attended":$(this).attr("data-attended")
+            };
+                    
+            $.ajax({
+                    type: 'POST',
+                    url: "{% url 'setMemberWorship' %}",
+                    data:  JSON.stringify(dataJSON), 
+                    dataType: "json",
+                    contentType: 'application/json',
+                    headers:{
+                    "X-Csrftoken": '{{ csrf_token }}'
+                    },
+                    success: function (response) {
+                        //console.log(response);        
+                        var RetObject = JSON.parse(response.result);
+                        //console.log(RetObject);        
+                        $("#resultMessage").html(  RetObject.message );
+                        //console.log( clickObject);
+                        if( RetObject.message=="回報完成"){
+                            console.log( clickObject);
+                            if($( clickObject ).hasClass("btn-undo"))                            
+                                 $( clickObject ).removeClass("btn-undo");
+                            $( clickObject ).addClass("btn-primary");
+                            $(clickObject).attr("data-attended","Y");
+                            $(  clickObject).children("span:first").html("出席"+RetObject.session);
+                        }
+                        else if( RetObject.message=="取消回報完成"){
+                            if($( clickObject ).hasClass("btn-primary"))                            
+                                $( clickObject ).removeClass("btn-primary");
+                            $( clickObject ).addClass("btn-undo");
+                            
+                            $(clickObject).attr("data-attended","N");
+                            $( clickObject).children("span:first").html(RetObject.session);
+                        }
+                        //worshipObject= JSON.parse(response.result.worship);      
+                        //worshipgroupObject= JSON.parse( response.result.worshipgroup);  
+
+                        
+                    },
+                    error: function (response) {
+                        $("#resultMessage").html("主機回應錯誤");
+                    }
+            });
+      
+        });
+
+        //使用 LIFF_ID 初始化 LIFF 應用
+        initializeLiff('1657309833-rY7845XQ'); 
+
+   
+    });
+   
+</script>
+<form id="worship-form"> 
+    {% csrf_token %} 
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12  mb-4 ">
+            <div class=" alert alert-info" role="alert" style="font-size: 42pt;">                
+                {{listbase.1}}成員主日出席回報
+            </div>
+        </div>
+        <div class="col-10  mb-4">
+            <div class="input-group ">
+                <input  type="hidden" name="contactid" id="contactid" value="{{contactid}}" />                
+                <input  type="hidden" name="listid" id="listid" value="{{listid}}" />      
+                <span class="input-group-text"  id="inputGroup-sizing-default" ><span style="font-size: 40pt;">小組名稱</span></span>
+                <input type="text" name="contactname" id="contactname" 
+                      class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" style="font-size: 40pt;"  readonly value="{{listbase.1}}" ></input>
+            </div>
+        </div>       
+        <div class="col-10  mb-4">
+            <div class="input-group ">
+                <span   class=" input-group-text"  ><span style="font-size: 40pt;">主日崇拜</span></span>
+                <select class="form-select form-select-lg " aria-label="選擇周次" style="font-size: 40pt;"  id="worshipdate"  name="worshipdate">
+                    {% for elem in weeklist %}
+                        <option  value="{{ elem }}" >{{ elem  }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-2"></div>
+        <div class="col-12 ">
+            
+            {% for elem in listmember %}
+                <div class="row  mb-2 ">
+                <div class="col-3  mb-2 " data-key="{{elem.ContactId}}"><span style="font-size: 35pt;">{{elem.lastname}}</span></div>
+                <div class="col-9 mb-2 row ">
+                {% for worshipdata in elem.worshipdata %}
+                    {%if worshipdata.worship_date == weeklist.0 %}
+                        {%for s in  worshipdata.sessions %}
+                        <div class="col-3 "><button class="worshipdata btn 
+                            {%  if s.attended == 'N'  %} 
+                            btn-undo
+                            {%else%}
+                            btn-primary 
+                            {%endif%}            
+                            " style="width: 90%"  type="button" data-key="{{elem.ContactId}}"   data-date="{{worshipdata.worship_date}}" data-session="{{s.session}}" data-attended="{{s.attended}}"  >
+                            <span style="font-size: 35pt;">
+                                {%  if s.attended == "Y"  %}
+                                出席{{s.session  }}
+                                {%else%}
+                                {{s.session  }}
+                                {%endif%}            
+                            </span>
+                        </button></div>
+                        {% endfor %}
+                    {%endif%}
+                {% endfor %}
+                </div>
+                </div>
+            {% endfor %}
+            
+        </div>        
+        
+        <div class="col-12 mb-3 "><span  class="resultMessage" style="font-size: 38pt; " id="resultMessage" ></span> </div>        
+        <div class="col-6">
+            <button type="button" class="btn btn-info btn-lg" style="font-size: 48pt; " id="btnClose"  >Close</button>
+        </div>
+    </div>    
+</div>
+</form>
+<script>
+     var weeklistObject=[];
+     var listmemberObject=[];
+</script>
+{% endblock %}
