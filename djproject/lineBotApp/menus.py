@@ -168,7 +168,7 @@ def get_menu():
                 },
                 "hero": {
                     "type": "image",
-                    "url": setting.SERVER_URL+"static/3-0cover.jpg",  
+                    "url": settings.SERVER_URL+"static/3-0cover.jpg",  
                     "margin":"sm",
                     "spacing":"sm",
                     "aspectMode":"cover",
@@ -237,6 +237,7 @@ def get_menu():
 
 def getMenuV2(contactid=None, page=None,psconn=None):
   app.logger.info("getMenuV2:"+"contactid-"+contactid+" page-"+ ("" if page==None else page))
+  #app.logger.info(settings.SERVER_URL)
   # global  psconn #=  getConnection()
   with psconn.cursor() as pycursor:
     pycursor.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
@@ -478,7 +479,7 @@ def getMenuV2(contactid=None, page=None,psconn=None):
                             {
                                 "type": "image",
                                 "align": "start",
-                                "url": setting.SERVER_URL+"static/previous.png",  
+                                "url": settings.SERVER_URL+"static/previous.png",  
                                 "aspectMode":"cover",
                                 "aspectRatio":"1:1",
                                 "margin":"none",
@@ -593,7 +594,7 @@ def getMenuV2(contactid=None, page=None,psconn=None):
                                         "layout": "vertical",
                                         "contents":[{
                                         "type": "image",
-                                            "url": setting.SERVER_URL+"static/menub_07.jpg",  
+                                            "url": settings.SERVER_URL+"static/menub_07.jpg",  
                                             "aspectMode":"cover",
                                             "aspectRatio":"1:1",
                                             "margin":"sm",
@@ -646,7 +647,7 @@ def getMenuV2(contactid=None, page=None,psconn=None):
                                         "layout": "vertical",
                                         "contents":[{
                                         "type": "image",
-                                            "url": setting.SERVER_URL+"static/menub_13.jpg",  
+                                            "url": settings.SERVER_URL+"static/menub_13.jpg",  
                                             "aspectMode":"cover",
                                             "aspectRatio":"1:1",
                                             "margin":"sm",
@@ -666,8 +667,9 @@ def getMenuV2(contactid=None, page=None,psconn=None):
             }
         }
     elif  (page=="3"):
-        app.logger.info(contactid)
+      #  app.logger.info(contactid)
         groupdata = GroupOwner(contactid,psconn)    
+        app.logger.info(groupdata)
         #for group in groupdata:
         #print(group.listid+","+group.listname+","+group.role)
         #if (group.role!="member"):
@@ -692,7 +694,7 @@ def getMenuV2(contactid=None, page=None,psconn=None):
                             {
                                 "type": "image",
                                 "align": "start",
-                                "url": setting.SERVER_URL+"static/previous.png",  
+                                "url": settings.SERVER_URL+"static/previous.png",  
                                 "aspectMode":"cover",
                                 "aspectRatio":"1:1",
                                 "margin":"none",
@@ -750,7 +752,7 @@ def getMenuV2(contactid=None, page=None,psconn=None):
                                         "layout": "vertical",
                                         "contents":[{
                                         "type": "image",
-                                            "url":  setting.SERVER_URL+"static/menuc_03.jpg",  
+                                            "url":  settings.SERVER_URL+"static/menuc_03.jpg",  
                                             "aspectMode":"cover",
                                             "aspectRatio":"1:1",
                                             "margin":"sm",
@@ -773,7 +775,7 @@ def getMenuV2(contactid=None, page=None,psconn=None):
                                         "layout": "vertical",
                                         "contents":[{
                                         "type": "image",
-                                            "url":  setting.SERVER_URL+"static/menuc_05.jpg",  
+                                            "url":  settings.SERVER_URL+"static/menuc_05.jpg",  
                                             "aspectMode":"cover",
                                             "aspectRatio":"1:1",
                                             "margin":"sm",
@@ -796,7 +798,7 @@ def getMenuV2(contactid=None, page=None,psconn=None):
                                         "layout": "vertical",
                                         "contents":[{
                                         "type": "image",
-                                            "url":  setting.SERVER_URL+"static/menuc_07.jpg",  
+                                            "url":  settings.SERVER_URL+"static/menuc_07.jpg",  
                                             "aspectMode":"cover",
                                             "aspectRatio":"1:1",
                                             "margin":"sm",
@@ -826,7 +828,7 @@ def getMenuV2(contactid=None, page=None,psconn=None):
                                         "layout": "vertical",
                                         "contents":[{
                                         "type": "image",
-                                            "url":  setting.SERVER_URL+"static/menuc_12.jpg",  
+                                            "url":  settings.SERVER_URL+"static/menuc_12.jpg",  
                                             "aspectMode":"cover",
                                             "aspectRatio":"1:1",
                                             "margin":"sm",
@@ -849,7 +851,7 @@ def getMenuV2(contactid=None, page=None,psconn=None):
                                         "layout": "vertical",
                                         "contents":[{
                                         "type": "image",
-                                            "url":  setting.SERVER_URL+"static/menuc_13.jpg",  
+                                            "url":  settings.SERVER_URL+"static/menuc_13.jpg",  
                                             "aspectMode":"cover",
                                             "aspectRatio":"1:1",
                                             "margin":"sm",
@@ -872,7 +874,7 @@ def getMenuV2(contactid=None, page=None,psconn=None):
                                         "layout": "vertical",
                                         "contents":[{
                                         "type": "image",
-                                            "url":  setting.SERVER_URL+"static/menuc_14.jpg",  
+                                            "url":  settings.SERVER_URL+"static/menuc_14.jpg",  
                                             "aspectMode":"cover",
                                             "aspectRatio":"1:1",
                                             "margin":"sm",
