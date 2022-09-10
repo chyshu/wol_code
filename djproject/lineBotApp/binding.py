@@ -474,21 +474,21 @@ def addMe(request):
         member= get_contactbaseByContactName(contactname,psconn)
         if member.contactid!=None:
            # psconn =  getConnection()
-            pycursor = psconn.cursor()
-            pycursor.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
+            with  psconn.cursor() as  pycursor:
+                pycursor.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
 
-            pycursor.execute("""select contactid,user_id,displayname,sid from Id2contact where user_id=%s""" ,[ userid ])
-            row = pycursor.fetchone()
-            if row:
-                pycursor.execute(""" update Id2contact set contactid=%s where sid=%s""" ,[   member.contactid, str(row[3])	 ])	
-                result="綁定資料成功"
-            else:                
-                pycursor.execute("""insert into id2contact (groupId, user_id,displayname,contactid) values (%s,%s,%s,%s) """ ,[ "", userid ,  "" ,    member.contactid ]) 
-                profile= getLineProfile( userid )
-                if profile:                        
-                    pycursor.execute("""update id2contact set displayname=%s where user_id =%s """ ,[  profile.display_name ,userid ])
-                result="綁定資料成功"
-            pycursor.close()                
+                pycursor.execute("""select contactid,user_id,displayname,sid from Id2contact where user_id=%s""" ,[ userid ])
+                row = pycursor.fetchone()
+                if row:
+                    pycursor.execute(""" update Id2contact set contactid=%s where sid=%s""" ,[   member.contactid, str(row[3])	 ])	
+                    result="綁定資料成功"
+                else:                
+                    pycursor.execute("""insert into id2contact (groupId, user_id,displayname,contactid) values (%s,%s,%s,%s) """ ,[ "", userid ,  "" ,    member.contactid ]) 
+                    profile= getLineProfile( userid )
+                    if profile:                        
+                        pycursor.execute("""update id2contact set displayname=%s where user_id =%s """ ,[  profile.display_name ,userid ])
+                    result="綁定資料成功"
+            #pycursor.close()                
         else:
             result="找不到"+contactname+"的資料"
             
