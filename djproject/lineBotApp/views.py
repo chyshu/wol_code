@@ -135,8 +135,8 @@ def webhook(request):
 							row = curs.fetchone()
 							if row==None:
 					                        #  第一次加入ID2CONTACT 找不到資料
-								pycursor.execute("""insert into id2contact (groupId, user_id,displayname,contactid) values (%s,%s,%s,%s) """ ,[ "", event.source.user_id, "" , ""]) 
-							profile= getLineProfile(event.source.user_id )
+								curs.execute("""insert into id2contact (groupId, user_id,displayname,contactid) values (%s,%s,%s,%s) """ ,[ "", event.source.user_id, "" , ""]) 
+							profile= getLineProfile(event.source.user_id, conn )
 							if profile:
 								curs.execute("""update id2contact set displayname=%s where user_id =%s """ ,[  profile.display_name , event.source.user_id   ])
 								curs.execute("""select contactid,LastName from contactbase where new_line_displayname=%s""" ,[ profile.display_name ])
@@ -171,7 +171,7 @@ def webhook(request):
 					my_dict = {"action":[],"cid":[],"worshipdate":[],"session":[],"listid":[],"type":{} ,"listmemberid":{} ,"opid":[]   ,"times":[]  ,"prayid":[] ,"friendid":[] ,"sender":[] ,
 							"newRichMenuAliasId":[],"disp_order":[] ,"disp_yn":[], "page":[],"subject":[],"goback":[],"ownerid":[]
 					}
-					#app.logger.info(event.postback.data)
+					#app.logger.info()
 					for item in event.postback.data.split('&'):
 						value =item.split("=")
 						if value:
@@ -201,9 +201,10 @@ def webhook(request):
 						message.append( FlexSendMessage("代禱事項",contents= getPrayforMeListMenu( member.contactid ,displayname,conn) ))   
 						line_bot_api.reply_message(     event.reply_token, message)	
 					elif (my_dict["action"][0]=="bindingMenu"): 
-						app.logger.info(member.contactid )
-						member =get_contactbaseByContactId( member.contactid,conn )
-						displayname=member.contactname if  member.contactname!=None else member.display_name
+						app.logger.info("ID= " ) 
+						app.logger.info( str( member.contactid) )
+						#member =get_contactbaseByContactId( member.contactid,conn )
+						#displayname=member.contactname if  member.contactname!=None else member.display_name
 						message.append( FlexSendMessage("綁定資料",contents= getBindingMenu(member.contactid,displayname, event.source.user_id ,conn  ) )) 
 						line_bot_api.reply_message(     event.reply_token, message)
 					elif (my_dict["action"][0]=="bindingme"): 
@@ -381,7 +382,7 @@ def webhook(request):
 					               LastName=str(closegroup[2])
 					            curs.execute("""select contactid,user_id,worship_date,session  from worship where contactid=%s and worship_date = %s and session=%s  and del_flag='N' """ ,
 					                  [ closegroup[1],   my_dict["worshipdate"][0]  ,   my_dict["session"][0]    ])
-					            row = pycursor.fetchone()
+					            row = curs.fetchone()
 					            if  row:
 					              #message.append( TextSendMessage(  text=LastName+"出席"+worship_date.strftime('%Y-%m-%d')+"," + str(row[3])+ "主日" )  )
 					              displayname=displayname+","+ LastName

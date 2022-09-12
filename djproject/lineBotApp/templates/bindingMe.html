@@ -21,6 +21,8 @@
             e.preventDefault();
             
             if ( $("#contactname").val()!=""  ){
+                    $("#resultMessage").html("");
+
                     var serializedData = $(this).serialize();
                     $.ajax({
                         type: 'POST',
@@ -36,7 +38,7 @@
                             //console.log( response.result.error);
                         },
                         error: function (response) {
-                            $("#resultMessage").html("主機回應錯誤");
+                            $("#resultMessage").html( "主機回應錯誤"); 
                         }
                     });
             }
@@ -58,10 +60,9 @@
         </div>
         <div class="col-10 ">
             <div class="input-group "  >
-                <span class="input-group-text" id="inputGroup-sizing-default" ><span style="font-size: 48pt;color:red">姓名</span><span style="font-size: 24pt;color:red">(必填)</span></span>                
-                <input type="text" name="contactname" id="contactname" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" style="font-size: 48pt;" 
-                value="{{ contactname }}">  
-                
+                <span class="input-group-text" id="inputGroup-sizing-default" ><span style="font-size: 48pt;color:red">姓名</span><span style="font-size: 24pt;color:red">(必填)</span></span>    
+                <input type="text" name="contactname" id="contactname" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" style="font-size: 48pt;"  value="{{ contactname }}"></input>
+                <input type="hidden" name="userid" id="userid" value="{{userid}}"></input>
             </div>
         </div> 
         <div class="col-2"></div>

@@ -39,7 +39,7 @@ urlpatterns = [
     path('addCloseMember/' , lineBotApp.closefriend.addCloseMember,name="addCloseMember"), 
     path('admin/', admin.site.urls),
     path('addCloseMember/' ,lineBotApp.closefriend.addCloseMember,name="addCloseMember"), 
-    path('bindingMe/' , lineBotApp.binding.bindingMe),
+    path('bindingMe/<str:userid>' , lineBotApp.binding.bindingMe),
     path('addMe/' , lineBotApp.binding.addMe,name="addMe"),
     path('findMe/' , lineBotApp.binding.findContactByName,name="findMe"),    
     path('myworship/' , lineBotApp.myworship.myworship,name="myworship"),

@@ -38,7 +38,7 @@ parser = WebhookParser(settings.LINE_CHANNEL_SECRET)
 def getBindingMenu(contactid,displayname,userid,psconn):
 
     #useridjspon=json.dumps({"userid":userid})
-    #print (useridjspon)
+    app.logger.info(userid )
     msgcontents={
         "type": "carousel",  
         "contents": [
@@ -86,7 +86,7 @@ def getBindingMenu(contactid,displayname,userid,psconn):
                                         "label":"家人名單",
                                         "data":"action=myfamily"
                                     }
-                                },     
+                                },
                                  {
                                     "type": "button",
                                     "margin":"xs",
@@ -97,9 +97,9 @@ def getBindingMenu(contactid,displayname,userid,psconn):
                                         "label":"新增家人",
                                         "uri":settings.SERVER_URL+"closefriend?userid="+userid
                                     }
-                                },                                                                           
+                                },
                             ]
-                        },                                                                                                 
+                        },
                     ]
                 },
                 "footer":{
@@ -110,7 +110,7 @@ def getBindingMenu(contactid,displayname,userid,psconn):
                     ],
 
                 }
-            },                              
+            },
         ]
     }
     msgcontents["contents"][0]["footer"]["contents"].append(
@@ -182,8 +182,8 @@ def getBindingData(userid,psconn):
         try:
             profile = line_bot_api.get_profile(userid)        
             if profile:                                     
-                app.logger.info("profile:"+ profile.display_name )
-                app.logger.info("profile:"+ profile.user_id )
+                app.logger.info("profile 1: "+ profile.display_name )
+                app.logger.info("profile 2:"+ profile.user_id )
                 display_name=profile.display_name                   
             
         except LineBotApiError as e:
@@ -303,7 +303,7 @@ def getBindingData(userid,psconn):
                     "type":"uri",
                     "label":"重新綁定",
                     #"data":"action=bindingName"
-                    "uri":settings.SERVER_URL+"bindingMe?userid="+userid
+                    "uri":settings.SERVER_URL+"bindingMe/"+userid
                 }
             }
         )
@@ -465,13 +465,19 @@ def addMe(request):
     result=""	
     member  = Member(None,None,None,None,None,None)
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    app.logger.info("addme ")
     if is_ajax and request.method == "POST":
+        app.logger.info("POST get contactname")
         contactname = request.POST.get('contactname',None)
-        # print( contactname)
+        app.logger.info(  "===================="  )
+        #userid=request.POST.get('userid',None)
+        app.logger.info('add me '+ contactname)
         userid=request.session["userid"] 
-        # print(userid)
+        app.logger.info(userid)
+#        app.logger.info(userid)
         psconn=getConnection()
         member= get_contactbaseByContactName(contactname,psconn)
+        app.logger.info(str(member.contactid))
         if member.contactid!=None:
            # psconn =  getConnection()
             with  psconn.cursor() as  pycursor:
@@ -489,27 +495,28 @@ def addMe(request):
                         pycursor.execute("""update id2contact set displayname=%s where user_id =%s """ ,[  profile.display_name ,userid ])
                     result="綁定資料成功"
             #pycursor.close()                
+            app.logger.info(result)
         else:
             result="找不到"+contactname+"的資料"
             
-        return JsonResponse({ "result": { "familymember":   json.dumps(member.__dict__) , "error":result}  }, status=200)
+        return JsonResponse({ "result": { "member":   json.dumps(member.__dict__) , "error":result}  }, status=200)
     return JsonResponse( {"result": {"error": "UNKNOWN SOURCE" , "member" : json.dumps(member.__dict__) } } , status=200)    
 
 
 @csrf_protect
-def bindingMe(requet):
+def bindingMe(requet,userid):
     app = Flask(__name__)    
     result=""
-    with app.test_request_context():
+    #with app.test_request_context():
  
-        userid = requet.GET.get('userid',None)
-        app.logger.debug(userid)
+        #userid = requet.GET.get('userid',None)
+    app.logger.info(userid)
     
-    userid = requet.GET.get('userid',None)
+    #userid = requet.GET.get('userid',None)
     contactName=""
 
     requet.session["userid"] =userid
-    return render(requet, "bindingMe.html",{"contactname":contactName  })
+    return render(requet, "bindingMe.html",{"contactname":contactName , "userid":userid  })
 
 @csrf_protect
 def findContactByName(request):    

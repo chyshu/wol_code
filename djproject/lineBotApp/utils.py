@@ -135,12 +135,12 @@ def get_contactbase(userid,psconn):
 				#print("profile:"+ret.contactname )
 		#app.logger.info(ret)
 	else:
-		app.logger.info("profile:"+ userid+" not found"   )
+		app.logger.info("profile: "+ userid+" not found"   )
 	return ret
 
 def get_contactbaseByContactId(contactid,psconn):
 	#if psconn==None:
-	#	psconn =  getConnection()
+	#psconn =  getConnection()
 	app.logger.info('contactbaseByContactid'+contactid)
 	pycursor = psconn.cursor()
 	pycursor.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
@@ -166,10 +166,12 @@ def get_contactbaseByContactId(contactid,psconn):
 
 def get_contactbaseByContactName(lastname,psconn):
 	#psconn =  getConnection()
-	pycursor = psconn.cursor()
+	pycursor=  psconn.cursor() 
+	app.logger.info(" get contactname "+ ("" if lastname==None else lastname))
 	pycursor.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
 	thename = "" if lastname==None else lastname
-	ret = CloseFriend(None,None,None,None,None,None)
+	ret = Member(None,None,None,None,None,None)
+	app.logger.info("getcontactname "+thename)
 	if thename!="":
 		# pycursor.execute("""select   contactid,lastname, birthdate,mobilephone  from contactbase  where lastname like '%"""+thename+"""%'""" )
 		pycursor.execute("""select   contactid,lastname, birthdate,mobilephone  from contactbase  where lastname =%s  and statuscode='1' """,[ thename] )
@@ -182,7 +184,8 @@ def get_contactbaseByContactName(lastname,psconn):
 			if row:
 				ret.user_id  =str(row[1])
 				ret.display_name=str(row[2])
-	pscursor.close()
+	pycursor.close()
+
 	return ret
 
 def GroupOwner(contactid,psconn):
