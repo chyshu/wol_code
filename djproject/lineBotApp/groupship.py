@@ -27,7 +27,7 @@ app = Flask(__name__)
 
 # 小組回報MENU
 def getGroupListMenu(contactid, displayname,psconn):
-#    psconn =  getConnection()    
+#getWorshipReportByDate    psconn =  getConnection()    
     pycursor = psconn.cursor()
     pycursor.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
     today   = datetime.datetime.now()
@@ -43,7 +43,6 @@ def getGroupListMenu(contactid, displayname,psconn):
                         "text":  "小組回報",
                         "size":"xl",
                         "weight":"bold",
-                        
                         "color":"#1a5276FF",
                     }],
                     "backgroundColor": "#f1c40fF0",
@@ -145,7 +144,6 @@ def getGroupListMenuV2(contactid, displayname,psconn):
                         "text":  "小組回報",
                         "size":"xl",
                         "weight":"bold",
-                        
                         "color":"#1a5276FF",
                     }],
                     "backgroundColor": "#f1c40fF0",
@@ -733,7 +731,7 @@ def getGroupReport(contactid,listid,sender=None,psconn=None):
   with  psconn.cursor() as pycursor:
     pycursor.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
     today   = datetime.datetime.now()   
-    pycursor.execute("""select distinct worship_date   from worshipdate where worship_date<=%s order by worship_date desc limit 6""" ,[ today.strftime('%Y-%m-%d') ])
+    pycursor.execute("""select distinct worship_date   from worshipdate where worship_date<=%s order by worship_date desc limit 4""" ,[ today.strftime('%Y-%m-%d') ])
     worshipdate_rows = pycursor.fetchall()
     week=[]
     bdate=None
@@ -1515,7 +1513,7 @@ def getWorshipReport(contactid,listid,sender=None,psconn=None):
     pycursor.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
     today   = datetime.datetime.now()   
 #    print(today ) 
-    pycursor.execute("""select distinct worship_date   from worshipdate where worship_date<=%s order by worship_date desc limit 8""" ,[ today.strftime('%Y-%m-%d') ])
+    pycursor.execute("""select distinct worship_date   from worshipdate where worship_date<=%s order by worship_date desc limit 4""" ,[ today.strftime('%Y-%m-%d') ])
     worshipdate_rows = pycursor.fetchall()
     today   = datetime.datetime.now()   
     app.logger.info(today ) 
@@ -1554,7 +1552,7 @@ def getWorshipReportByDate(contactid,listid,thedate ,goBackAction=None,psconn=No
     pycursor = psconn.cursor()
     pycursor.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
     
-    print("getWorshipReportByDate" )     
+    app.logger.info("getWorshipReportByDate "+thedate.strftime("%Y-%m-%d") )     
     week=[]
     # worshipdata   =  Worshipdata (None,None,None,None,None,None)
     the_sunday = current_weekday( datetime.date(thedate.year, thedate.month, thedate.day) , 6)
@@ -1750,7 +1748,7 @@ def getPersonalWorshipReport(contactid,listid,sender=None,psconn=None):
   with  psconn.cursor() as  pycursor:
     pycursor.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
     today   = datetime.datetime.now()   
-    pycursor.execute("""select distinct worship_date   from worshipdate where worship_date<=%s order by worship_date desc limit 8 """ ,[ today.strftime('%Y-%m-%d') ])
+    pycursor.execute("""select distinct worship_date   from worshipdate where worship_date<=%s order by worship_date desc limit 4 """ ,[ today.strftime('%Y-%m-%d') ])
     worshipdate_rows = pycursor.fetchall()
     week=[]
     bdate=None
